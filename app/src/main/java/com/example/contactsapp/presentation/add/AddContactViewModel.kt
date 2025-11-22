@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.contactsapp.domain.model.Contact
+import com.example.contactsapp.domain.repository.ContactRepository
+import kotlinx.coroutines.delay
 
 
 @HiltViewModel
@@ -18,12 +20,15 @@ class AddContactViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    var state by mutableStateOf(AddContactState())
+    var state by mutableStateOf(
+        AddContactState(
+            isPhotoSheetVisible = false,
+            photoUri = null
+        )
+    )
         private set
 
-    // Controls visibility of bottom sheet
-    var isPhotoSheetVisible by mutableStateOf(false)
-        private set
+
 
 
     fun onEvent(event: AddContactEvent) {
@@ -47,6 +52,12 @@ class AddContactViewModel @Inject constructor(
             is AddContactEvent.ClosePhotoSheet -> {
                 state = state.copy(isPhotoSheetVisible = false)
             }
+            is AddContactEvent.PhotoSelected -> {
+                state = state.copy(
+                    photoUri = event.uri,
+                    isPhotoSheetVisible = false
+                )
+            }
 
 
 
@@ -58,18 +69,28 @@ class AddContactViewModel @Inject constructor(
         viewModelScope.launch {
             state = state.copy(isSaving = true)
 
-            val newContact = Contact(
-                id = 0,
+            useCases.addContact(
                 firstName = state.firstName,
                 lastName = state.lastName,
                 phoneNumber = state.phoneNumber,
-                photoUri = null
+                photoUri = state.photoUri
             )
 
-            useCases.addContact(newContact)
+            delay(1500)
 
-            state = state.copy(isSaving = false)
+            state = state.copy(
+                isSaving = false,
+                isSaved = true
+            )
         }
     }
+
+// ViewModel responsible for handling all UI logic of the Add Contact screen
+// Manages user inputs photo selection state, and triggers the add-contact use case
+// Central event handler that updates UI state or performs actions based on events coming from the UI layer
+// Saves a new contact by calling the appropriate domain use case
+
+
+
 
 }

@@ -1,15 +1,28 @@
 package com.example.contactsapp.domain.repository
 
+import android.net.Uri
 import com.example.contactsapp.domain.model.Contact
 
 interface ContactRepository {
 
-    suspend fun insert(contact: Contact)
+    suspend fun getRemoteContacts(): List<Contact>
 
-    suspend fun update(contact: Contact)
+    suspend fun getRemoteContactById(id: String): Contact
 
-    suspend fun delete(contact: Contact)
+    suspend fun createRemoteContact(
+        firstName: String,
+        lastName: String,
+        phoneNumber: String,
+        photoUri: Uri?
+    ): Contact
 
-    suspend fun getAll(): List<Contact>
+    suspend fun updateRemoteContact(
+        id: String,
+        firstName: String,
+        lastName: String,
+        phoneNumber: String,
+        photoUri: Uri?
+    ): Contact
+
+    suspend fun deleteRemoteContact(id: String)
 }
-//UI → UseCase → Repository Interface

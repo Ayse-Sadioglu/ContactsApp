@@ -2,18 +2,16 @@ package com.example.contactsapp.presentation.add
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.CircularProgressIndicator
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -23,9 +21,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import com.airbnb.lottie.compose.*
+
 
 
 
@@ -38,7 +41,66 @@ fun AddContactScreen(
     onDone: () -> Unit = {}
 ) {
     val state = viewModel.state
+
+    // Launcher for selecting image from gallery
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { viewModel.onEvent(AddContactEvent.PhotoSelected(it)) }
+    }
+
     val focusManager = LocalFocusManager.current
+    if (state.isSaved) {
+        LaunchedEffect(Unit) {
+            onDone()
+        }
+        return
+    }
+
+    if (state.isSaving) {
+
+        val composition by rememberLottieComposition(
+            LottieCompositionSpec.RawRes(R.raw.done)
+        )
+
+        val progress by animateLottieCompositionAsState(
+            composition = composition,
+            iterations = 1,
+            speed = 1f,
+            restartOnPlay = false,
+            cancellationBehavior = LottieCancellationBehavior.Immediately
+        )
+
+
+        LaunchedEffect(progress) {
+            if (progress == 1f) {
+                onDone()
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(200.dp)
+                )
+
+                Text("All Done!", style = MaterialTheme.typography.titleMedium)
+                Text("New contact saved 🎉")
+            }
+        }
+
+        return
+    }
+
+
 
     // Root layout
     Column(
@@ -61,7 +123,8 @@ fun AddContactScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Cancel")
+            Text("Cancel",
+                modifier = Modifier.clickable { onBack() })
             Text("New Contact", style = MaterialTheme.typography.titleMedium)
 
             Text(
@@ -69,7 +132,7 @@ fun AddContactScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable {
                     viewModel.onEvent(AddContactEvent.SaveContact)
-                    onDone()
+
                 }
             )
         }
@@ -149,15 +212,17 @@ fun AddContactScreen(
                         viewModel.onEvent(AddContactEvent.ClosePhotoSheet)
                     },
                     onGalleryClick = {
-                        // TODO: open gallery
+                        galleryLauncher.launch("image/*")
                         viewModel.onEvent(AddContactEvent.ClosePhotoSheet)
-                    },
+                    }
+                    ,
                     onCancel = {
                         viewModel.onEvent(AddContactEvent.ClosePhotoSheet)
                     }
                 )
             }
         }
+
 
 
     }

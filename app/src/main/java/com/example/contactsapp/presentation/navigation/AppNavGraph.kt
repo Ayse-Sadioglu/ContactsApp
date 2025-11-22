@@ -9,6 +9,8 @@ import com.example.contactsapp.presentation.add.AddContactScreen
 import com.example.contactsapp.presentation.profile.ProfileScreen
 import com.example.contactsapp.presentation.search.SearchScreen
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.contactsapp.presentation.contacts.ContactsViewModel
 
 @Composable
 fun AppNavGraph(
@@ -25,24 +27,41 @@ fun AppNavGraph(
         composable(Screen.Contacts.route) {
             ContactsScreen(
                 onAddClick = { navController.navigate(Screen.AddContact.route) },
-                onContactClick = { id ->
-                    // later for detail screen
-                }
+                onContactClick = { id -> },
+                onSearchClick = { navController.navigate(Screen.Search.route) }
             )
         }
 
+
         composable(Screen.AddContact.route) {
             AddContactScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onDone = {
+                    navController.navigate(Screen.Contacts.route) {
+                        popUpTo(Screen.AddContact.route) { inclusive = true }
+                    }
+                }
+
             )
         }
+
+
 
         composable(Screen.Profile.route) {
             ProfileScreen()
         }
 
         composable(Screen.Search.route) {
-            SearchScreen()
+            println("SearchScreen OPENED")
+            val viewModel: ContactsViewModel = hiltViewModel()
+
+            SearchScreen(
+                onBack = { navController.popBackStack() },
+                allContacts = viewModel.state.contacts
+            )
         }
+
+
+
     }
 }

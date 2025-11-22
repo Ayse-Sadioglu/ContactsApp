@@ -1,8 +1,8 @@
 package com.example.contactsapp.domain.usecase
 
 data class ContactUseCases(
+    val getContacts: GetContactsUseCase,
     val addContact: AddContactUseCase,
-    val deleteContact: DeleteContactUseCase,
     val updateContact: UpdateContactUseCase,
-    val getContacts: GetContactsUseCase
+    val deleteContact: DeleteContactUseCase
 )
