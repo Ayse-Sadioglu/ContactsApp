@@ -29,7 +29,7 @@ object AppModule {
     fun provideApiKeyInterceptor(): Interceptor {
         return Interceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("ApiKey", "a3a45192-fb91-4bf8-a005-452547acc5c6")
+                .addHeader("ApiKey", "redacted")
                 .build()
             chain.proceed(request)
         }
@@ -90,5 +90,4 @@ object AppModule {
     }
 }
 // This module wires the entire data layer: networking, repository, and use cases
-// Retrofit + OkHttp handle API communication with automatic API key injection
 // All dependencies are provided as singletons to ensure consistent and optimized appwide usage
